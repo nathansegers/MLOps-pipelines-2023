@@ -1,0 +1,19 @@
+name: cli-created-machine
+type: computeinstance
+size: STANDARD_DS3_V2
+
+enable_node_public_ip: true
+ssh_public_access_enabled: false
+
+location: westeurope
+
+schedules:
+  compute_start_stop:
+  - action: stop
+    state: enabled
+    trigger:
+      expression: 00 20 * * 1,2,3,4,5
+      time_zone: UTC
+      type: cron
+idle_time_before_shutdown: PT30M
+idle_time_before_shutdown_minutes: 30
