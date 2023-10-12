@@ -1,0 +1,39 @@
+name: Azure ML Job Pipeline
+
+on:
+  workflow_dispatch:
+    branches:
+      - main
+      - master
+
+env:
+  GROUP: mlops
+  WORKSPACE: mlops-nathan
+  LOCATION: westeurope
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v4
+      
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+    # AZURE_CREDENTIALS should be a secret in your repo containing a JSON string of your service principal details
+
+    - name: Install Azure ML CLI extension
+      uses: azure/CLI@v1
+      with:
+        azcliversion: 2.30.0
+        inlineScript: |
+          az extension add --name ml
+
+    - name: Execute Azure ML script
+      uses: azure/CLI@v1
+      with:
+        azcliversion: 2.30.0
+        inlineScript: |
+          az ml job create --file ./pipelines/animals-classification.yaml
