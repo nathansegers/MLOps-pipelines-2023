@@ -29,7 +29,7 @@ jobs:
     - name: Execute Azure ML script
       uses: azure/CLI@v1
       with:
-        azcliversion: 2.30.0
+        azcliversion: 2.53.0
         inlineScript: |
           az extension add --name ml -y
           az configure --defaults group=$GROUP workspace=$WORKSPACE location=$LOCATION
