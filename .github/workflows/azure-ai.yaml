@@ -24,16 +24,10 @@ jobs:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
     # AZURE_CREDENTIALS should be a secret in your repo containing a JSON string of your service principal details
 
-    - name: Install Azure ML CLI extension
-      uses: azure/CLI@v1
-      with:
-        azcliversion: 2.30.0
-        inlineScript: |
-          az extension add --name ml
-
     - name: Execute Azure ML script
       uses: azure/CLI@v1
       with:
         azcliversion: 2.30.0
         inlineScript: |
+          az extension add --name ml
           az ml job create --file ./pipelines/animals-classification.yaml
