@@ -31,5 +31,6 @@ jobs:
       with:
         azcliversion: 2.30.0
         inlineScript: |
-          az extension add --name ml
+          az extension add --name ml -y
+          az configure --defaults group=$GROUP workspace=$WORKSPACE location=$LOCATION
           az ml job create --file ./pipelines/animals-classification.yaml
