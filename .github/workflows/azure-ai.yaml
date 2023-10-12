@@ -33,4 +33,4 @@ jobs:
         inlineScript: |
           az extension add --name ml -y
           az configure --defaults group=$GROUP workspace=$WORKSPACE location=$LOCATION
-          az ml job create --file ./pipelines/animals-classification.yaml
+          az ml job create --file ./pipelines/animals-classification.yaml --set name=animals-classification-${{ github.sha }}-${{ github.run_id }}
