@@ -4,7 +4,9 @@ on:
   workflow_dispatch:
     branches:
       - main
-      - master
+  push:
+    branches:
+      - main
 
 env:
   GROUP: mlops
