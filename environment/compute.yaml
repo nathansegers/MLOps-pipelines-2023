@@ -3,9 +3,6 @@ name: cli-created-machine
 type: computeinstance
 size: STANDARD_DS3_V2
 
-enable_node_public_ip: true
-ssh_public_access_enabled: false
-
 location: westeurope
 
 schedules:
