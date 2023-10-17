@@ -16,9 +16,8 @@ env:
 jobs:
   azure-pipeline:
     runs-on: ubuntu-latest
-    
     # runs-on: self-hosted
-
+    steps:
     - name: Check out repository
       uses: actions/checkout@v4
       
