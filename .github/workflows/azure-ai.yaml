@@ -14,7 +14,7 @@ env:
   LOCATION: westeurope
 
 jobs:
-  build:
+  azure-pipeline:
     runs-on: ubuntu-latest
     steps:
     - name: Check out repository
@@ -28,9 +28,24 @@ jobs:
 
     - name: Execute Azure ML script
       uses: azure/CLI@v1
+      id: azure-ml-pipeline
       with:
         azcliversion: 2.53.0
         inlineScript: |
           az extension add --name ml -y
           az configure --defaults group=$GROUP workspace=$WORKSPACE location=$LOCATION
           az ml job create --file ./pipelines/animals-classification.yaml --set name=animals-classification-${{ github.sha }}-${{ github.run_id }}
+          VERSION=$(az ml model -n animal_classification --query "[0].version" -o tsv)
+          echo "Latest version of model animal_classification is: $VERSION"
+          echo "::set-output name=latest_version::$VERSION"
+
+    - name: Download model
+      uses: azure/CLI@v1
+      with:
+        azcliversion: 2.53.0
+        inlineScript: |
+          az extension add --name ml -y
+          az configure --defaults group=$GROUP workspace=$WORKSPACE location=$LOCATION
+          az ml model download --name animal_classification --download-path ./model --version ${{ steps.azure-ml-pipeline.outputs.latest_version }}"
+    
+          
