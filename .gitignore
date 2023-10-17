@@ -2,3 +2,4 @@ model
 *.zip
 
 mlflow/mlruns/*
+actions-runner/
