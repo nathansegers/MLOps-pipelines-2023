@@ -1,3 +1,4 @@
+$schema: https://azuremlschemas.azureedge.net/latest/computeInstance.schema.json
 name: cli-created-machine
 type: computeinstance
 size: STANDARD_DS3_V2
@@ -14,6 +15,7 @@ schedules:
     trigger:
       expression: 00 20 * * 1,2,3,4,5
       time_zone: UTC
+      start_time: "18:30"
       type: cron
 idle_time_before_shutdown: PT30M
 idle_time_before_shutdown_minutes: 30
