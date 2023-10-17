@@ -14,8 +14,8 @@ outputs:
     type: uri_folder
 
 settings:
-  default_compute: serverless
-  # default_compute: azureml:zinnige-naam
+  # default_compute: serverless
+  default_compute: azureml:zinnige-naam
 
 jobs:
   data_prep_pandas:
