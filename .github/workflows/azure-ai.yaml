@@ -35,13 +35,15 @@ jobs:
         inlineScript: |
           az extension add --name ml -y
           az configure --defaults group=$GROUP workspace=$WORKSPACE location=$LOCATION
-          az ml compute create --file ./environment/compute.yaml
-          az ml compute start --name cli-created-machine
+          
           az ml job create --file ./pipelines/animals-classification.yaml --set name=animals-classification-${{ github.sha }}-${{ github.run_id }} --stream
           VERSION=$(az ml model list -n animal-classification --query "[0].version" -o tsv)
           echo "Latest version of model animal-classification is: $VERSION"
           echo "::set-output name=latest_version::$VERSION"
           az ml compute stop --name cli-created-machine
+
+# az ml compute create --file ./environment/compute.yaml
+# az ml compute start --name cli-created-machine
 
     - name: Download model
       uses: azure/CLI@v1
