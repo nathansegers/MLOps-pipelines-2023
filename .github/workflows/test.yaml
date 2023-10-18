@@ -12,4 +12,4 @@ jobs:
 
     steps:
       - name: Test
-        run: docker run nathansegers/mlops-animals-api -p 8001:8000
+        run: docker run -p 8001:8000 nathansegers/mlops-animals-api 
