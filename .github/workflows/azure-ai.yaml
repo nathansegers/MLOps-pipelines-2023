@@ -11,6 +11,14 @@ on:
         description: 'Train model'
         required: false
         default: true
+      skip_training_pipeline:
+        description: 'Skip training pipeline'
+        required: false
+        default: true
+      deploy_model:
+        description: 'Deploy the AI model onto local Kubernetes cluster'
+        required: false
+        default: true
     branches:
       - main
   push:
@@ -24,9 +32,12 @@ env:
   # Allow to override for each run, in the workflow dispatch manual starts
   CREATE_COMPUTE: ${{ github.event.inputs.create_compute }}
   TRAIN_MODEL: ${{ github.event.inputs.train_model }}
+  SKIP_TRAINING_PIPELINE: ${{ github.event.inputs.skip_training_pipeline }}
+  DEPLOY_MODEL: ${{ github.event.inputs.deploy_model }}
 
 jobs:
   azure-pipeline:
+    if: ${{ inputs.skip_training_pipeline }}
     runs-on: ubuntu-latest
     # runs-on: self-hosted
     steps:
@@ -39,7 +50,7 @@ jobs:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
     # AZURE_CREDENTIALS should be a secret in your repo containing a JSON string of your service principal details
 
-    - name: Prepare Azure ML script
+    - name: Create compute
       uses: azure/CLI@v1
       id: prepare-ml-pipeline
       if: ${{ env.CREATE_COMPUTE == 'true' }}
@@ -50,7 +61,7 @@ jobs:
           az configure --defaults group=$GROUP workspace=$WORKSPACE location=$LOCATION
           az ml compute create --file ./environment/compute.yaml
 
-    - name: Create script
+    - name: Start compute
       uses: azure/CLI@v1
       # If the previous step was executed and succeeded or skipped
       if: ${{ steps.prepare-ml-pipeline.outcome == 'success' }} || ${{ steps.prepare-ml-pipeline.outcome == 'skipped' }} 
@@ -76,7 +87,7 @@ jobs:
           echo "Latest version of model animal-classification is: $VERSION"
           echo "::set-output name=latest_version::$VERSION"
 
-    - name: Cleanup Azure ML Script
+    - name: Cleanup Compute
       uses: azure/CLI@v1
       if: always()
       with:
@@ -88,6 +99,9 @@ jobs:
       continue-on-error: true
 
   download:
+    needs: azure-pipeline
+    # Only run if azure-pipeline is succeeded OR skipped
+    if: ${{ needs.azure-pipeline.result == 'success' || needs.azure-pipeline.result == 'skipped' }}
     # runs-on: self-hosted
     runs-on: ubuntu-latest
     steps:
@@ -121,6 +135,14 @@ jobs:
         path: inference
 
   deploy:
+    needs: download
+    # Only run if download is succeeded OR skipped AND if the deploy_model variable is true
+    if: ${{
+      (
+        needs.download.result == 'success' ||
+        needs.download.result == 'skipped'
+      ) &&
+      inputs.deploy_model }}
     runs-on: self-hosted
     # runs-on: ubuntu-latest
     steps:
