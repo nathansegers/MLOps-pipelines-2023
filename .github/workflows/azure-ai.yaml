@@ -7,23 +7,27 @@ on:
         description: 'Create compute'
         required: false
         default: true
+        type: boolean
       train_model:
         description: 'Train model'
         required: false
         default: true
+        type: boolean
       skip_training_pipeline:
         description: 'Skip training pipeline'
         required: false
         default: true
+        type: boolean
       deploy_model:
         description: 'Deploy the AI model onto local Kubernetes cluster'
         required: false
         default: true
+        type: boolean
     branches:
       - main
-  push:
-    branches:
-      - main
+  # push:
+  #   branches:
+  #     - main
 
 env:
   GROUP: mlops
