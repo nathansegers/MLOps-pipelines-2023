@@ -3,3 +3,8 @@ model
 
 mlflow/mlruns/*
 actions-runner/
+
+**/*__pycache__
+**/.DS_STORE
+
+inference/animal-cnn

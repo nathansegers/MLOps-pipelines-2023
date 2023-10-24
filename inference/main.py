@@ -1,37 +1,42 @@
-from fastapi import FastAPI, UploadFile, HTTPException
-from keras.models import load_model
-import cv2
 import numpy as np
-from starlette.responses import JSONResponse
-from starlette.requests import Request
+from PIL import Image
+from tensorflow.keras.models import load_model
+from fastapi import FastAPI, File, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
+import os
 
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-# Load the model on startup
-model_path = "animal-classification"
-loaded_model = load_model(model_path)
+ANIMALS = ['Cat', 'Dog', 'Panda'] # Animal names here
 
-@app.post("/predict/")
-async def predict(request: Request):
-    form = await request.form()
-    uploaded_file = form["file"]
-    contents = await uploaded_file.read()
+# It would've been better to use an environment variable to fix this line actually...
+model_path = os.path.join('animal-classification', "animals-classification", "INPUT_model_path", "animal-cnn")
+model = load_model(model_path) # Model_name here!
 
-    # Convert bytes to numpy array
-    nparr = np.frombuffer(contents, np.uint8)
+@app.post('/upload/image')
+async def uploadImage(img: UploadFile = File(...)):
+    original_image = Image.open(img.file)
+    original_image = original_image.resize((64, 64))
+    images_to_predict = np.expand_dims(np.array(original_image), axis=0)
+    predictions = model.predict(images_to_predict) #[0 1 0]
+    classifications = predictions.argmax(axis=1) # [1]
 
-    # Decode the image
-    image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+    return ANIMALS[classifications.tolist()[0]] # "Dog"
 
-    # Resize the image
-    resized_image = cv2.resize(image, (64, 64))
+@app.get("/healthcheck")
+def healthcheck():
+    return {
+        "status": "Healthy",
+        "version": "0.1.1"
+    }
 
-    # Add an extra dimension for batch size and predict
-    preprocessed_image = np.expand_dims(resized_image, axis=0)
-    predictions = loaded_model.predict(preprocessed_image)
-
-    # Get the predicted class
-    predicted_class = np.argmax(predictions[0])
-
-    return JSONResponse(content={"predicted_class": int(predicted_class)})
-
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", host="0.0.0.0", port=8001, reload=True)

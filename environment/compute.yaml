@@ -3,8 +3,6 @@ name: cli-created-machine
 type: computeinstance
 size: STANDARD_DS3_V2
 
-location: westeurope
-
 schedules:
   compute_start_stop:
   - action: stop
