@@ -82,10 +82,7 @@ jobs:
     # AZURE_CREDENTIALS should be a secret in your repo containing a JSON string of your service principal details
 
     - name: Install YQ
-      run:
-        sudo apt-add-repository -y ppa:rmescandon/yq
-        sudo apt update
-        sudo apt install -y yq
+      uses: dcarbone/install-yq-action@v1.1.1      
 
     - name: read-yaml-file
       uses: mikefarah/yq@master
