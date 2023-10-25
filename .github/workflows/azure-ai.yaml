@@ -3,11 +3,11 @@ name: Azure ML Job Pipeline
 on:
   workflow_dispatch:
     inputs:
-      # create_compute:
-      #   description: 'Create compute'
-      #   required: false
-      #   default: true
-      #   type: boolean
+      create_compute:
+        description: 'Create compute'
+        required: false
+        default: true
+        type: boolean
       train_model:
         description: 'Train model'
         required: false
@@ -30,9 +30,29 @@ on:
       #   default: cli-created-machine
     branches:
       - main
-  # push:
-  #   branches:
-  #     - main
+  workflow_call:
+    inputs:
+      create_compute:
+        description: 'Create compute'
+        required: false
+        default: true
+        type: boolean
+      train_model:
+        description: 'Train model'
+        required: false
+        default: false
+        type: boolean
+      skip_training_pipeline:
+        description: 'Skip training pipeline'
+        required: false
+        default: true
+        type: boolean
+      deploy_model:
+        description: 'Deploy the AI model onto local Kubernetes cluster'
+        required: false
+        default: false
+        type: boolean
+
 
 env:
   GROUP: mlops
@@ -61,16 +81,17 @@ jobs:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
     # AZURE_CREDENTIALS should be a secret in your repo containing a JSON string of your service principal details
 
-    # - name: Install YQ
-    #   run:
-    #     wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq &&\
-    #     chmod +x /usr/bin/yq
+    - name: Install YQ
+      run:
+        sudo apt-add-repository -y ppa:rmescandon/yq
+        sudo apt update
+        sudo apt install -y yq
 
-    # - name: read-yaml-file
-    #   uses: mikefarah/yq@master
-    #   id: read_compute_yaml
-    #   with:
-    #     cmd: yq '.name' ${{ github.workspace }}/environment/compute.yaml
+    - name: read-yaml-file
+      uses: mikefarah/yq@master
+      id: read_compute_yaml
+      with:
+        cmd: yq '.name' ${{ github.workspace }}/environment/compute.yaml
 
     - name: Create compute
       uses: azure/CLI@v1
