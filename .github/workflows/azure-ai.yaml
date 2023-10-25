@@ -61,11 +61,16 @@ jobs:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
     # AZURE_CREDENTIALS should be a secret in your repo containing a JSON string of your service principal details
 
+    - name: Install YQ
+      run:
+        wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq &&\
+        chmod +x /usr/bin/yq
+
     - name: read-yaml-file
-      uses: pietrobolcato/action-read-yaml@1.0.0
+      uses: mikefarah/yq@master
       id: read_compute_yaml
       with:
-        config: ${{ github.workspace }}/environment/compute.yaml
+        cmd: yq '.name' ${{ github.workspace }}/environment/compute.yaml
 
     - name: Create compute
       uses: azure/CLI@v1
@@ -88,6 +93,7 @@ jobs:
           az extension add --name ml -y
           az configure --defaults group=$GROUP workspace=$WORKSPACE location=$LOCATION
           az ml compute start --name ${{ steps.read_compute_yaml.outputs.name }}
+          echo ${{ steps.read_compute_yaml.outputs.name }}
       continue-on-error: true
     
     - name: Execute Azure ML Script
@@ -103,13 +109,12 @@ jobs:
 
     - name: Cleanup Compute
       uses: azure/CLI@v1
-      if: always()
       with:
         azcliversion: 2.53.0
         inlineScript: |
           az extension add --name ml -y
           az configure --defaults group=$GROUP workspace=$WORKSPACE location=$LOCATION
-          az ml compute stop --name cli-created-machine
+          az ml compute stop --name ${{ steps.read_compute_yaml.outputs.name }}
       continue-on-error: true
 
   download:
