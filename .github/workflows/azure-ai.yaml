@@ -93,7 +93,7 @@ jobs:
     - name: Create compute
       uses: azure/CLI@v1
       id: prepare-ml-pipeline
-      # if: ${{ inputs.create_compute }}
+      if: ${{ inputs.create_compute }}
       with:
         azcliversion: 2.53.0
         inlineScript: |
@@ -110,8 +110,8 @@ jobs:
         inlineScript: |
           az extension add --name ml -y
           az configure --defaults group=$GROUP workspace=$WORKSPACE location=$LOCATION
-          az ml compute start --name ${{ steps.read_compute_yaml.outputs.name }}
-          echo ${{ steps.read_compute_yaml.outputs.name }}
+          az ml compute start --name ${{ steps.read_compute_yaml.outputs.results }}
+          echo ${{ steps.read_compute_yaml.outputs.results }}
       continue-on-error: true
     
     - name: Execute Azure ML Script
