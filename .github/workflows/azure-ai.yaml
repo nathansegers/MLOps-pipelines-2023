@@ -11,7 +11,7 @@ on:
       train_model:
         description: 'Train model'
         required: false
-        default: true
+        default: false
         type: boolean
       skip_training_pipeline:
         description: 'Skip training pipeline'
@@ -21,8 +21,13 @@ on:
       deploy_model:
         description: 'Deploy the AI model onto local Kubernetes cluster'
         required: false
-        default: true
+        default: false
         type: boolean
+      # compute_name:
+      #   type: string
+      #   description: "The name of the compute to start or stop"
+      #   required: true
+      #   default: cli-created-machine
     branches:
       - main
   # push:
@@ -44,6 +49,8 @@ jobs:
     if: ${{ inputs.skip_training_pipeline }}
     runs-on: ubuntu-latest
     # runs-on: self-hosted
+    outputs:
+      ai-model-version: ${{ steps.azure-ml-pipeline.outputs.latest_version }}
     steps:
     - name: Check out repository
       uses: actions/checkout@v4
@@ -54,10 +61,16 @@ jobs:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
     # AZURE_CREDENTIALS should be a secret in your repo containing a JSON string of your service principal details
 
+    - name: read-yaml-file
+      uses: pietrobolcato/action-read-yaml@1.0.0
+      id: read_compute_yaml
+      with:
+        config: ${{ github.workspace }}/environment/compute.yaml
+
     - name: Create compute
       uses: azure/CLI@v1
       id: prepare-ml-pipeline
-      if: ${{ env.CREATE_COMPUTE == 'true' }}
+      if: ${{ inputs.create_compute }}
       with:
         azcliversion: 2.53.0
         inlineScript: |
@@ -68,28 +81,25 @@ jobs:
     - name: Start compute
       uses: azure/CLI@v1
       # If the previous step was executed and succeeded or skipped
-      if: ${{ steps.prepare-ml-pipeline.outcome == 'success' }} || ${{ steps.prepare-ml-pipeline.outcome == 'skipped' }} 
+      if: ${{ steps.prepare-ml-pipeline.outcome == 'success'  || steps.prepare-ml-pipeline.outcome == 'skipped' }} 
       with:
         azcliversion: 2.53.0
         inlineScript: |
           az extension add --name ml -y
           az configure --defaults group=$GROUP workspace=$WORKSPACE location=$LOCATION
-          az ml compute start --name cli-created-machine
+          az ml compute start --name ${{ steps.read_compute_yaml.outputs.name }}
       continue-on-error: true
     
     - name: Execute Azure ML Script
       uses: azure/CLI@v1
       id: azure-ml-pipeline
-      if: ${{ env.TRAIN_MODEL == 'true' }}
+      if: ${{ inputs.train_model }}
       with:
         azcliversion: 2.53.0
         inlineScript: |
           az extension add --name ml -y
           az configure --defaults group=$GROUP workspace=$WORKSPACE location=$LOCATION
           az ml job create --file ./pipelines/animals-classification.yaml --set name=animals-classification-${{ github.sha }}-${{ github.run_id }} --stream
-          VERSION=$(az ml model list -n animal-classification --query "[0].version" -o tsv)
-          echo "Latest version of model animal-classification is: $VERSION"
-          echo "::set-output name=latest_version::$VERSION"
 
     - name: Cleanup Compute
       uses: azure/CLI@v1
@@ -109,6 +119,7 @@ jobs:
     # runs-on: self-hosted
     runs-on: ubuntu-latest
     steps:
+
     - name: Check out repository
       uses: actions/checkout@v4
       
@@ -117,20 +128,16 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    - name: Download model
+    - name: Set model version
       uses: azure/CLI@v1
       with:
         azcliversion: 2.53.0
         inlineScript: |
           az extension add --name ml -y
           az configure --defaults group=$GROUP workspace=$WORKSPACE location=$LOCATION
-          az ml model download --name animal-classification --download-path ./inference --version ${{ steps.azure-ml-pipeline.outputs.latest_version }}"
+          VERSION=$(az ml model list -n animal-classification --query "[0].version" -o tsv)
+          az ml model download --name animal-classification --download-path ./inference --version $VERSION"
     
-    # - name: Move model
-    #   run: |
-    #     ls inference/animal-classification/animals-classification/INPUT_model_path
-    #     mv inference/animal-classification/animals-classification/INPUT_model_path/animal-cnn inference
- 
     - name: Upload API Code for Docker
       # if: inputs.local_deployment
       uses: actions/upload-artifact@v2
