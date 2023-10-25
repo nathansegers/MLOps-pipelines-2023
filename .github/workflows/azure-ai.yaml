@@ -88,7 +88,7 @@ jobs:
       uses: mikefarah/yq@master
       id: read_compute_yaml
       with:
-        cmd: yq '.name' ${{ github.workspace }}/environment/compute.yaml
+        cmd: yq '.name' ./environment/compute.yaml
 
     - name: Create compute
       uses: azure/CLI@v1
