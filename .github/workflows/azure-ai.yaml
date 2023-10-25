@@ -3,11 +3,11 @@ name: Azure ML Job Pipeline
 on:
   workflow_dispatch:
     inputs:
-      create_compute:
-        description: 'Create compute'
-        required: false
-        default: true
-        type: boolean
+      # create_compute:
+      #   description: 'Create compute'
+      #   required: false
+      #   default: true
+      #   type: boolean
       train_model:
         description: 'Train model'
         required: false
@@ -61,21 +61,21 @@ jobs:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
     # AZURE_CREDENTIALS should be a secret in your repo containing a JSON string of your service principal details
 
-    - name: Install YQ
-      run:
-        wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq &&\
-        chmod +x /usr/bin/yq
+    # - name: Install YQ
+    #   run:
+    #     wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq &&\
+    #     chmod +x /usr/bin/yq
 
-    - name: read-yaml-file
-      uses: mikefarah/yq@master
-      id: read_compute_yaml
-      with:
-        cmd: yq '.name' ${{ github.workspace }}/environment/compute.yaml
+    # - name: read-yaml-file
+    #   uses: mikefarah/yq@master
+    #   id: read_compute_yaml
+    #   with:
+    #     cmd: yq '.name' ${{ github.workspace }}/environment/compute.yaml
 
     - name: Create compute
       uses: azure/CLI@v1
       id: prepare-ml-pipeline
-      if: ${{ inputs.create_compute }}
+      # if: ${{ inputs.create_compute }}
       with:
         azcliversion: 2.53.0
         inlineScript: |
