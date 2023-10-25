@@ -87,8 +87,7 @@ jobs:
     - name: read-yaml-file
       id: read_compute_yaml
       run:
-        NAME=$(yq ".name" ./environment/compute.yaml)
-        echo "::set-output name=name::$NAME"
+        echo "name=$(yq ".name" ./environment/compute.yaml)" >> $GITHUB_OUTPUT
 
     - name: Create compute
       uses: azure/CLI@v1
@@ -110,8 +109,8 @@ jobs:
         inlineScript: |
           az extension add --name ml -y
           az configure --defaults group=$GROUP workspace=$WORKSPACE location=$LOCATION
-          az ml compute start --name ${{ steps.read_compute_yaml.outputs.name }}
-          echo ${{ steps.read_compute_yaml.outputs.name }}
+          az ml compute start --name "$name"
+          echo "$name"
       continue-on-error: true
     
     - name: Execute Azure ML Script
