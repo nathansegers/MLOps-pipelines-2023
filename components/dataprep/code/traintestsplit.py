@@ -13,17 +13,17 @@ def main():
     # input and output arguments
     parser = argparse.ArgumentParser()
     parser.add_argument("--datasets", type=str, nargs="+", help="All the datasets to combine")
-    parser.add_argument("--split_size", type=int, help="Percentage to use as Testing data")
     parser.add_argument("--training_data_output", type=str, help="path to training output data")
     parser.add_argument("--testing_data_output", type=str, help="path to testing output data")
+    parser.add_argument("--split_size", type=int, help="Percentage to use as Testing data")
     args = parser.parse_args()
 
     print(" ".join(f"{k}={v}" for k, v in vars(args).items()))
 
     print("input data:", args.datasets)
-    print("Split size:", args.split_size)
     print("Training folder:", args.training_data_output)
     print("Testing folder:", args.testing_data_output)
+    print("Split size:", args.split_size)
 
     train_test_split_factor = args.split_size / 100 # Alias
     datasets = args.datasets

@@ -8,3 +8,5 @@ actions-runner/
 **/.DS_STORE
 
 inference/animal-cnn
+
+.github/workflows/creds.json

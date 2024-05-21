@@ -1,0 +1,43 @@
+enable_node_public_ip: true
+id: /subscriptions/7c50f9c3-289b-4ae0-a075-08784b3b9042/resourceGroups/mlops-at-home/providers/Microsoft.MachineLearningServices/workspaces/mlops-nathan/computes/cli-created-machine
+idle_time_before_shutdown: PT30M
+idle_time_before_shutdown_minutes: 30
+last_operation:
+  operation_name: Create
+  operation_status: Succeeded
+  operation_time: '2024-05-14T09:40:21.061Z'
+  operation_trigger: User
+location: westeurope
+name: cli-created-machine
+network_settings:
+  private_ip_address: 10.0.0.4
+  public_ip_address: 40.115.15.163
+os_image_metadata:
+  current_image_version: 24.01.30
+  is_latest_os_image_version: true
+  latest_image_version: 24.01.30
+provisioning_state: Succeeded
+resourceGroup: mlops-at-home
+schedules:
+  compute_start_stop:
+  - action: stop
+    provisioning_state: Completed
+    schedule_id: 3f93bb31-dfeb-4b9f-8da7-92d8e33a8bc4
+    state: enabled
+    trigger:
+      expression: 00 20 * * 1,2,3,4,5
+      start_time: '2023-10-16T15:00:00'
+      time_zone: UTC
+      type: cron
+services:
+- display_name: Jupyter
+  endpoint_uri: https://cli-created-machine.westeurope.instances.azureml.ms/tree/
+- display_name: Jupyter Lab
+  endpoint_uri: https://cli-created-machine.westeurope.instances.azureml.ms/lab
+size: STANDARD_DS3_V2
+ssh_public_access_enabled: false
+ssh_settings:
+  admin_username: azureuser
+  ssh_port: '50000'
+state: Running
+type: computeinstance

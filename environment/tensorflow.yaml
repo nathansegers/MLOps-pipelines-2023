@@ -1,6 +1,6 @@
 $schema: https://azuremlschemas.azureedge.net/latest/environment.schema.json
 description: Custom environment for Image Processing (with Pillow)
-name: aml-Tensorflow
+name: aml-Tensorflow-cli
 version: 0.1.0
 
 conda_file: ../components/training/conda.yaml
@@ -9,3 +9,4 @@ os_type: linux
 
 tags:
   Pillow: 10.0.1
+  Tensorflow: 2.6.0

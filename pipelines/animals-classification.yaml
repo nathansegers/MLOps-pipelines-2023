@@ -1,7 +1,7 @@
 $schema: https://azuremlschemas.azureedge.net/latest/pipelineJob.schema.json
 
 type: pipeline
-name: animals-classification-3
+name: animals-classification-cli-2
 display_name: Animals Classification
 experiment_name: classification
 

@@ -139,7 +139,7 @@ def main():
     cf_matrix = confusion_matrix(y_test.argmax(axis=1), predictions.argmax(axis=1))
     print(cf_matrix)
 
-    ### TODO for students
+    ### TODO for students (for later)
     ### Find a way to log more information to the Run context.
 
     # Save the confusion matrix to the outputs.

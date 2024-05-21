@@ -1,4 +1,6 @@
-name: data_split
+$schema: https://azuremlschemas.azureedge.net/latest/commandComponent.schema.json
+
+name: data_split_cli
 version: 0.1.0
 description: Reads a data asset of images and combines them into a training and testing
   dataset

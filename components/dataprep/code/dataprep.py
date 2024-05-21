@@ -1,7 +1,10 @@
 import os
 import argparse
+import logging
 from glob import glob
 from PIL import Image
+
+
 
 def main():
     """Main function of the script."""
@@ -20,6 +23,7 @@ def main():
 
     output_dir = args.output_data
     size = (64, 64) # Later we can also pass this as a property
+
 
     for file in glob(args.data + "/*.jpg"):
         img = Image.open(file)
