@@ -1,9 +1,8 @@
 name: Azure ML Automated Pushing pipeline
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
+    
 
 jobs:
   start:
