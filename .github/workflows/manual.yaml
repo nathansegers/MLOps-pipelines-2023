@@ -24,7 +24,7 @@ jobs:
 
       
       - name: Azure test - Get Compute
-        uses: Azure/CLI@v2
+        uses: Azure/CLI@v2.0.0
         with:
           azcliversion: 2.61.0 # Currently the latest, but best to specify for reproducibility
           inlineScript: |
@@ -32,7 +32,7 @@ jobs:
         continue-on-error: true
 
       - name: Azure test - Get Compute
-        uses: Azure/CLI@v2
+        uses: Azure/CLI@v2.0.0
         with:
           azcliversion: 2.61.0 # Currently the latest, but best to specify for reproducibility
           inlineScript: |
@@ -41,7 +41,7 @@ jobs:
         continue-on-error: true
 
       - name: Azure test - Get Compute
-        uses: Azure/CLI@v2
+        uses: Azure/CLI@v2.0.0
         with:
           azcliversion: 2.61.0 # Currently the latest, but best to specify for reproducibility
           inlineScript: |
