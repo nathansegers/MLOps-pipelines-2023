@@ -29,6 +29,24 @@ jobs:
         with:
           azcliversion: 2.61.0 # Currently the latest, but best to specify for reproducibility
           inlineScript: |
-            az extension add --name ml -y
+            az extension add --name ml -y --debug
+        continue-on-error: true
+
+      - name: Azure test - Get Compute
+        uses: Azure/CLI@v2
+        with:
+          azcliversion: 2.61.0 # Currently the latest, but best to specify for reproducibility
+          inlineScript: |
+            az extension add --name ml -y --debug
+            az configure --defaults group=$GROUP workspace=$WORKSPACE location=$LOCATION --debug
+        continue-on-error: true
+
+      - name: Azure test - Get Compute
+        uses: Azure/CLI@v2
+        with:
+          azcliversion: 2.61.0 # Currently the latest, but best to specify for reproducibility
+          inlineScript: |
+            az extension add --name ml -y --debug
             az configure --defaults group=$GROUP workspace=$WORKSPACE location=$LOCATION --debug
             az ml compute list --debug
+        continue-on-error: true
