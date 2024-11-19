@@ -24,9 +24,9 @@ jobs:
                   creds: ${{ secrets.AZURE_CREDENTIALS }}
 
             - name: Azure -- Create Compute
-              uses: Azure/CLI@v2.0.0
+              uses: Azure/CLI@v2.1.0
               with:
-                  azcliversion: 2.61.0
+                  azcliversion: 2.64.0
                   inlineScript: |
                       az extension add --name ml
                       az configure --defaults group=$GROUP workspace=$WORKSPACE location=$LOCATION
