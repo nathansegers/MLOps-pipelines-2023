@@ -26,11 +26,103 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Azure test - Get Compute
+      # Fetch the name of the compute machine here, or update it through settings if set up.
+
+      - name: Azure -- Create Compute
         uses: Azure/CLI@v2.0.0
         with:
-          azcliversion: 2.53.0 # Best to specify for reproducibility
+          azcliversion: 2.53.0 # Best to specify for reproducibility, the last version that works that I know of, the other ones had some issues
           inlineScript: |
-            az extension add --name ml --debug
-            az configure --defaults group=$GROUP workspace=$WORKSPACE location=$LOCATION --debug
-            az ml compute list --debug
+            az extension add --name ml
+            az configure --defaults group=$GROUP workspace=$WORKSPACE location=$LOCATION
+            az ml compute create --file ./environment/compute.yaml
+
+      # TODO: Check if the compute machine is on or not, and trigger the next step accordingly
+
+      - name: Azure -- Start Compute
+        uses: azure/CLI@v2.0.0
+        with:
+          azcliversion: 2.53.0
+          inlineScript: |
+            az extension add --name ml -y
+            az configure --defaults group=$GROUP workspace=$WORKSPACE location=$LOCATION
+            az ml compute start --name cli-created-machine
+        continue-on-error: true
+
+    # Todo: Customise this step to your needs, with maybe a loop, if that's something fun to do?
+    # Todo: Only execute if needed
+      - name: Azure -- Environment Setup
+        uses: Azure/CLI@v2.0.0
+        with:
+          azcliversion: 2.53.0
+          inlineScript: |
+            az extension add --name ml
+            az configure --defaults group=$GROUP workspace=$WORKSPACE location=$LOCATION
+            az ml environment create --file ./environment/pillow.yaml
+            az ml environment create --file ./environment/tensorflow.yaml
+
+      # Todo: Customise this step to your needs, with maybe a loop, if that's something fun to do?
+      # Todo: Only execute if needed
+      - name: Azure -- Component Setup
+        uses: Azure/CLI@v2.0.0
+        with:
+          azcliversion: 2.53.0
+          inlineScript: |
+            az extension add --name ml
+            az configure --defaults group=$GROUP workspace=$WORKSPACE location=$LOCATION
+            az ml components create --file ./components/dataprep/dataprep.yaml
+            az ml components create --file ./components/dataprep/data_split.yaml
+            az ml components create --file ./components/training/training.yaml
+
+       # Todo: Only execute if needed
+      - name: Azure -- Pipeline Run
+        uses: Azure/CLI@v2.0.0
+        with:
+          azcliversion: 2.53.0
+          inlineScript: |
+            az extension add --name ml
+            az configure --defaults group=$GROUP workspace=$WORKSPACE location=$LOCATION
+            az ml job create --file ./pipelines/animals-classification.yaml --set name=animals-classification-${{ github.sha }}-${{ github.run_id }} --stream
+
+      - name: Cleanup Compute
+        uses: azure/CLI@v2.0.0
+        with:
+          azcliversion: 2.53.0
+          inlineScript: |
+            az extension add --name ml -y
+            az configure --defaults group=$GROUP workspace=$WORKSPACE location=$LOCATION
+            az ml compute stop --name cli-created-machine
+        continue-on-error: true
+
+
+  download:
+    needs: azure-pipeline
+    # Only run if azure-pipeline is succeeded OR skipped
+    if: ${{ needs.azure-pipeline.result == 'success' || needs.azure-pipeline.result == 'skipped' }}
+    runs-on: ubuntu-24.04
+    steps:
+
+    - name: Check out repository
+      uses: actions/checkout@v4
+      
+    - name: Azure Login
+      uses: azure/login@v2
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Azure -- Download Model
+      uses: azure/CLI@v2.0.0
+      with:
+        azcliversion: 2.53.0
+        inlineScript: |
+          az extension add --name ml -y
+          az configure --defaults group=$GROUP workspace=$WORKSPACE location=$LOCATION
+          VERSION=$(az ml model list -n animal-classification --query "[0].version" -o tsv)
+          az ml model download --name animal-classification --download-path ./inference --version $VERSION"
+    
+    - name: Docker -- Upload API code from Inference
+      uses: actions/upload-artifact@v2
+      with:
+        name: docker-config
+        path: inference
+      
